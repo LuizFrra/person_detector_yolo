@@ -35,9 +35,6 @@ class PersonDetector:
             print("Loagind YOLOv3 Model ...")
         return cv2.dnn.readNetFromDarknet(self.__getYoloConfigPath(), self.__getYoloWeightsPath())
 
-    def __getImagePath(self, imageName):
-        return os.path.sep.join([".", "../images", imageName])
-
     def __getFinalOutputLayers(self):
         layerNames = self.__net.getLayerNames()
         return [layerNames[i[0] - 1] for i in self.__net.getUnconnectedOutLayers()]
@@ -50,9 +47,8 @@ class PersonDetector:
         self.__net.setInput(imageBlob)
         return self.__net.forward(self.__getFinalOutputLayers())
 
-    def execute(self):
-        imageFullPath = self.__getImagePath(self.__imageNameToRead)
-        self.__image = cv2.imread(imageFullPath)
+    def execute(self, image):
+        self.__image = image
         start = time.time()
         self.__layerOutputs = self.__forwardImageThroughYolo(self.__image)
         end = time.time()
@@ -63,4 +59,3 @@ class PersonDetector:
         draw = d.Draw(self.__image, self.__layerOutputs)
         image = draw.execute()
         cv2.imshow("Image", image)
-        cv2.waitKey(0)

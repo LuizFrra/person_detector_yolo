@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import cv2
 
 class Draw:
@@ -13,13 +14,12 @@ class Draw:
         # Aplica um algoritimo de non-maximum supression : https://www.pyimagesearch.com/2014/11/17/non-maximum-suppression-object-detection-python/ , esse algoritimo
         # remove caixa delimitadoras redundante, como por exemplo ter duas caixa delimitadora para o mesmo objeto detectado
         detections = cv2.dnn.NMSBoxes(boxes, confidences, self.__confidenceInput, self.__threshold)
-        colors = self.__generateColorsForLabels()
 
         if len(detections) > 0:
             for detection in detections.flatten():
                 (x, y) = (boxes[detection][0], boxes[detection][1])
                 (w, h) = (boxes[detection][2], boxes[detection][3])
-                color = [int(3) for c in colors[0]]
+                color = [75, 139, 59]
                 cv2.rectangle(self.__image, (x, y), (x + w, y + h), color, 2)
                 text = "{}: {:.2f}".format("Person", confidences[detection])
                 cv2.putText(self.__image, text, (y, x), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
@@ -27,11 +27,10 @@ class Draw:
         return self.__image
 
 
-    def __generateColorsForLabels(self):
-        minPixelValue = 0
+    def __generateColor(self):
         maxPixelValue = 255
-        numberOfColorChannel = 3
-        return np.random.randint(minPixelValue, maxPixelValue, (5, numberOfColorChannel), dtype = "uint8")
+        color = lambda : [random.randint(0, maxPixelValue), random.randint(0, maxPixelValue), random.randint(0, maxPixelValue)]
+        return color()
 
     def __getBoxesAndConfidence(self):
         boxes = []
