@@ -50,17 +50,22 @@ def detectOnVideo(videoName):
 
     video.release()
 
-def detectOnImage():
-    for i in range(6, 15):
-        print(calculateFrame(i + 1))
-        imageName = "scene" + calculateFrame(i + 1) + ".png"
-        image = loadImage(imageName)
-        personDector.execute(image)
-        personDector.draw()
+def detectOnImage(imagePath):
+    image = loadImage(imagePath)
+    personDector.execute(image)
+    personDector.draw()
+    cv2.waitKey(0)
+    # for i in range(6, 15):
+    #     print(calculateFrame(i + 1))
+    #     imageName = "scene" + calculateFrame(i + 1) + ".png"
+    #     image = loadImage(imageName)
+    #     personDector.execute(image)
+    #     personDector.draw()
 
 def main():
     print("Hello World!")
-    detectOnVideo("../videos/shibuya.mp4")
+    detectOnVideo("../videos/test.mp4")
+    #detectOnImage("../images/two_p.jpg")
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":

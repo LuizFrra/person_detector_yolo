@@ -8,7 +8,7 @@ import time
 class PersonDetector:
 
     def __init__(self):
-        self.__debugEnable = True
+        self.__debugEnable = False
         self.__net = self.__readNet()
         self.__imageNameToRead = ""
 

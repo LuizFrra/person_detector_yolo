@@ -2,12 +2,16 @@ import numpy as np
 import random
 import cv2
 
+from Object import Object
+from scipy.spatial import distance as dist
+
 class Draw:
     def __init__(self, image, yoloOutput):
         self.__image = image
         self.__yoloOutput = yoloOutput
         self.__confidenceInput = 0.5
         self.__threshold = 0.6
+        self.__maxPixelDistance = 1000
     
     def execute(self):
         (boxes, confidences) = self.__getBoxesAndConfidence()
@@ -15,17 +19,38 @@ class Draw:
         # remove caixa delimitadoras redundante, como por exemplo ter duas caixa delimitadora para o mesmo objeto detectado
         detections = cv2.dnn.NMSBoxes(boxes, confidences, self.__confidenceInput, self.__threshold)
 
+        objects = []
+        centroids = []
         if len(detections) > 0:
             for detection in detections.flatten():
                 (x, y) = (boxes[detection][0], boxes[detection][1])
                 (w, h) = (boxes[detection][2], boxes[detection][3])
-                color = [75, 139, 59]
-                cv2.rectangle(self.__image, (x, y), (x + w, y + h), color, 2)
-                text = "{}: {:.2f}".format("Person", confidences[detection])
-                cv2.putText(self.__image, text, (y, x), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                object = Object(w, h, x, y, confidences[detection])
+                centroids.append(object.getCenterAsArray())
+                objects.append(object)
         
+        distances = dist.cdist(centroids, centroids, metric="euclidean")
+        for personIndex in range(len(distances)):
+            numberOfObjectNear = [x for x in distances[personIndex] if x > self.__maxPixelDistance]
+            if len(numberOfObjectNear) > 0:
+                objects[personIndex].setIsNear()
+
+        return self.__draw(objects)
+
+    def __draw(self, objects = []):
+        for object in objects:
+            #cv2.rectangle(self.__image, (object.x, object.y), object.getRectangle(), object.color, 2)
+            cv2.circle(self.__image, object.getCenter(), radius=5, color = [0, 0, 255], thickness=-1)
+            #print(object.getCenter())
+            #text = "{}: {:.2f}".format("Person", object.confidence)
+            #cv2.putText(self.__image, text, (object.y, object.x), cv2.FONT_HERSHEY_SIMPLEX, 0.5, object.color, 2)
+    
         return self.__image
 
+    def __getCentroid(self, x, y, w, h):
+        xCentroid = int(x + (w/2))
+        yCentroid = int(y + (h/2))
+        return xCentroid, yCentroid
 
     def __generateColor(self):
         maxPixelValue = 255
