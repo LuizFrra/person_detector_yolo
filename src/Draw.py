@@ -11,7 +11,7 @@ class Draw:
         self.__yoloOutput = yoloOutput
         self.__confidenceInput = 0.5
         self.__threshold = 0.6
-        self.__min_distance = 80
+        self.__max_pixel_distance = 150
     
     def execute(self):
         (boxes, confidences) = self.__getBoxesAndConfidence()
@@ -32,10 +32,9 @@ class Draw:
         
         distances = dist.cdist(centroids, centroids, metric="euclidean")
         print(distances)
-        print(centroids)
         for personIndex in range(len(distances)):
-            numberOfObjectNear = [x for x in distances[personIndex] if x > self.__min_distance]
-            if len(numberOfObjectNear) > 0:
+            numberOfObjectNear = [x for x in distances[personIndex] if x < self.__max_pixel_distance]
+            if len(numberOfObjectNear) > 1:
                 objects[personIndex].setIsNear()
 
         return self.__draw(objects)
@@ -45,8 +44,6 @@ class Draw:
             cv2.rectangle(self.__image, (object.x, object.y), object.getRectangle(), object.color, 2)
             cv2.circle(self.__image, object.getCenter(), radius=5, color = [0, 0, 255], thickness=-1)
             text = "{}: {:.2f}".format("Person", object.confidence)
-            text = str(idx)
-            print(text)
             cv2.putText(self.__image, text, object.getCenter(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, object.color, 2)
     
         return self.__image
