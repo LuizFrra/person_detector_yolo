@@ -5,7 +5,7 @@ class Object:
         self.x = x
         self.y = y
         self.xCentroid = int(self.x + (self.width/2))
-        self.yCentroid = int(self.x + (self.height/2))
+        self.yCentroid = int(self.y + (self.height/2))
         self.xRect = self.x + self.width
         self.yRect = self.y + self.height
         self.isNear = False

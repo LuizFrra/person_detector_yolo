@@ -11,7 +11,7 @@ class Draw:
         self.__yoloOutput = yoloOutput
         self.__confidenceInput = 0.5
         self.__threshold = 0.6
-        self.__maxPixelDistance = 1000
+        self.__min_distance = 80
     
     def execute(self):
         (boxes, confidences) = self.__getBoxesAndConfidence()
@@ -21,6 +21,7 @@ class Draw:
 
         objects = []
         centroids = []
+
         if len(detections) > 0:
             for detection in detections.flatten():
                 (x, y) = (boxes[detection][0], boxes[detection][1])
@@ -30,20 +31,23 @@ class Draw:
                 objects.append(object)
         
         distances = dist.cdist(centroids, centroids, metric="euclidean")
+        print(distances)
+        print(centroids)
         for personIndex in range(len(distances)):
-            numberOfObjectNear = [x for x in distances[personIndex] if x > self.__maxPixelDistance]
+            numberOfObjectNear = [x for x in distances[personIndex] if x > self.__min_distance]
             if len(numberOfObjectNear) > 0:
                 objects[personIndex].setIsNear()
 
         return self.__draw(objects)
 
     def __draw(self, objects = []):
-        for object in objects:
-            #cv2.rectangle(self.__image, (object.x, object.y), object.getRectangle(), object.color, 2)
+        for idx, object in enumerate(objects):
+            cv2.rectangle(self.__image, (object.x, object.y), object.getRectangle(), object.color, 2)
             cv2.circle(self.__image, object.getCenter(), radius=5, color = [0, 0, 255], thickness=-1)
-            #print(object.getCenter())
-            #text = "{}: {:.2f}".format("Person", object.confidence)
-            #cv2.putText(self.__image, text, (object.y, object.x), cv2.FONT_HERSHEY_SIMPLEX, 0.5, object.color, 2)
+            text = "{}: {:.2f}".format("Person", object.confidence)
+            text = str(idx)
+            print(text)
+            cv2.putText(self.__image, text, object.getCenter(), cv2.FONT_HERSHEY_SIMPLEX, 0.5, object.color, 2)
     
         return self.__image
 

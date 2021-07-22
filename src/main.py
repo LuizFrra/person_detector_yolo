@@ -28,22 +28,24 @@ def loadVideo(videoName):
         raise Exception("Não foi possível carregar o video")
     return video
 
+def captureFrame(frame):
+    cv2.imwrite('../images/test.png', frame) # want to save frame here
+
 def detectOnVideo(videoName):
     video  = loadVideo(videoName)
     frameCount = 1
     while video.isOpened():
         ret, frame = video.read()
-        
         if frameCount % 10 == 0:
             if not ret and frameCount == 1:
                 raise Exception("Não foi possível obter o frame")
             if not ret:
                 break
-            
-            personDector.execute(frame)
+            personDector.execute(frame.copy())
             personDector.draw()
 
-            if cv2.waitKey(10) == ord('q'):
+            if cv2.waitKey(100) == ord('q'):
+                captureFrame(frame)
                 break
 
         frameCount+=1
@@ -64,8 +66,8 @@ def detectOnImage(imagePath):
 
 def main():
     print("Hello World!")
-    detectOnVideo("../videos/test.mp4")
-    #detectOnImage("../images/two_p.jpg")
+    #detectOnVideo("../videos/test.mp4")
+    detectOnImage("../images/test.png")
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
