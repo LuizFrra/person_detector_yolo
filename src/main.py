@@ -13,54 +13,46 @@ def loadImage(imageName):
         raise Exception("Não foi possível carregar a imagem")
     return image
 
-def calculateFrame(scene = 1, divisor = 50):
-    if scene == 1: 
-        return "00001"
-    value =  1 + ((scene - 1) * divisor)
-    valueStr = str(value)
-    numberLength = len(valueStr)
-    padZeros = "0" * (5 - numberLength)
-    return padZeros + valueStr
-
 def loadVideo(videoName):
     video = cv2.VideoCapture(videoName)
     if video is None:
         raise Exception("Não foi possível carregar o video")
     return video
 
+def captureFrame(frame):
+    cv2.imwrite('../images/test.png', frame) # want to save frame here
+
 def detectOnVideo(videoName):
     video  = loadVideo(videoName)
     frameCount = 1
     while video.isOpened():
         ret, frame = video.read()
-        
         if frameCount % 10 == 0:
             if not ret and frameCount == 1:
                 raise Exception("Não foi possível obter o frame")
             if not ret:
                 break
-            
-            personDector.execute(frame)
+            personDector.execute(frame.copy())
+            print(personDector.getLastResult())
             personDector.draw()
 
-            if cv2.waitKey(10) == ord('q'):
+            if cv2.waitKey(100) == ord('q'):
+                captureFrame(frame)
                 break
 
         frameCount+=1
 
     video.release()
 
-def detectOnImage():
-    for i in range(6, 15):
-        print(calculateFrame(i + 1))
-        imageName = "scene" + calculateFrame(i + 1) + ".png"
-        image = loadImage(imageName)
-        personDector.execute(image)
-        personDector.draw()
+def detectOnImage(imagePath):
+    image = loadImage(imagePath)
+    personDector.execute(image)
+    personDector.draw()
+    cv2.waitKey(0)
 
 def main():
-    print("Hello World!")
-    detectOnVideo("../videos/shibuya.mp4")
+    detectOnVideo("../videos/test.mp4")
+    #detectOnImage("../images/test.png")
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":

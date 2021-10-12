@@ -1,5 +1,6 @@
 from typing import final
-import Draw as d
+import Draw as drawer
+import ImageExtract as extractor
 import numpy as np
 import cv2
 import os
@@ -10,25 +11,16 @@ class PersonDetector:
     def __init__(self):
         self.__debugEnable = True
         self.__net = self.__readNet()
-        self.__imageNameToRead = ""
-
-    def setImagePathToRead(self, str):
-        self.__imageNameToRead = str
+        self.__lastInformation = {}
 
     def __getConfigPath(self):
         return "../config/yolo";
-
-    def __getLabelsPath(self):
-        return os.path.sep.join([".", self.__getConfigPath(), "coco.names"])
 
     def __getYoloConfigPath(self):
         return os.path.sep.join([".", self.__getConfigPath(), "yolov3.cfg"])
         
     def __getYoloWeightsPath(self):
         return os.path.sep.join([".", self.__getConfigPath(), "yolov3.weights"])
-
-    def __readLabels(self):
-        return open(self.__getLabelsPath()).read().strip().split("\n")
 
     def __readNet(self):
         if(self.__debugEnable):
@@ -52,10 +44,18 @@ class PersonDetector:
         start = time.time()
         self.__layerOutputs = self.__forwardImageThroughYolo(self.__image)
         end = time.time()
+        imageExtractor = extractor.ImageExtract(self.__image, self.__layerOutputs)
+        self.__lastInformation = imageExtractor.execute()
         if(self.__debugEnable):
             print("[INFO] YOLO took {:.6f} seconds".format(end - start))
-    
+
+    def getLastResult(self):
+        return {
+            'number_of_objets': self.__lastInformation['number_of_objets'],
+            'number_of_near_objects': self.__lastInformation['number_of_near_objects']
+        }
+
     def draw(self):
-        draw = d.Draw(self.__image, self.__layerOutputs)
-        image = draw.execute()
+        draw = drawer.Draw(self.__image)
+        image = draw.execute(self.__lastInformation['result'])
         cv2.imshow("Image", image)
