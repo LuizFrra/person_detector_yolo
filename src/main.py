@@ -13,15 +13,6 @@ def loadImage(imageName):
         raise Exception("Não foi possível carregar a imagem")
     return image
 
-def calculateFrame(scene = 1, divisor = 50):
-    if scene == 1: 
-        return "00001"
-    value =  1 + ((scene - 1) * divisor)
-    valueStr = str(value)
-    numberLength = len(valueStr)
-    padZeros = "0" * (5 - numberLength)
-    return padZeros + valueStr
-
 def loadVideo(videoName):
     video = cv2.VideoCapture(videoName)
     if video is None:
@@ -42,6 +33,7 @@ def detectOnVideo(videoName):
             if not ret:
                 break
             personDector.execute(frame.copy())
+            print(personDector.getLastResult())
             personDector.draw()
 
             if cv2.waitKey(100) == ord('q'):
@@ -59,7 +51,6 @@ def detectOnImage(imagePath):
     cv2.waitKey(0)
 
 def main():
-    print("Hello World!")
     detectOnVideo("../videos/test.mp4")
     #detectOnImage("../images/test.png")
     cv2.destroyAllWindows()
