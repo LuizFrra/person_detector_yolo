@@ -1,5 +1,6 @@
 import os
 import cv2
+from LogService import LogService
 import PersonDetector as p
 
 personDector = p.PersonDetector()
@@ -23,22 +24,24 @@ def captureFrame(frame):
     cv2.imwrite('../images/test.png', frame) # want to save frame here
 
 def detectOnVideo(videoName):
+    logService = LogService('http://168.119.178.10/api/v1/device/1/log')
     video  = loadVideo(videoName)
     frameCount = 1
     while video.isOpened():
         ret, frame = video.read()
-        if frameCount % 10 == 0:
+        if frameCount % 1 == 0:
             if not ret and frameCount == 1:
                 raise Exception("Não foi possível obter o frame")
             if not ret:
                 break
             personDector.execute(frame.copy())
-            print(personDector.getLastResult())
-            personDector.draw()
+            result = personDector.getLastResult()
+            logService.log(result)
+            #personDector.draw()
 
             if cv2.waitKey(100) == ord('q'):
                 captureFrame(frame)
-                break
+                return "stop";
 
         frameCount+=1
 
@@ -51,7 +54,10 @@ def detectOnImage(imagePath):
     cv2.waitKey(0)
 
 def main():
-    detectOnVideo("../videos/test.mp4")
+    while True:
+        result = detectOnVideo("../videos/test.mp4")
+        if result == "stop":
+            break;
     #detectOnImage("../images/test.png")
     cv2.destroyAllWindows()
 
