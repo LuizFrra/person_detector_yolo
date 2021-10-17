@@ -1,9 +1,14 @@
 import os
 import cv2
+import threading
+import time
 from LogService import LogService
 import PersonDetector as p
+import logging
 
-personDector = p.PersonDetector()
+logging.basicConfig(level=logging.INFO,
+                    format='(%(threadName)-10s) %(message)s',
+                    )
 
 def getImagePath(imageName):
     return os.path.sep.join([".", "../images", imageName])
@@ -27,6 +32,7 @@ def detectOnVideo(videoName):
     logService = LogService('http://168.119.178.10/api/v1/device/1/log')
     video  = loadVideo(videoName)
     frameCount = 1
+    personDector = p.PersonDetector()
     while video.isOpened():
         ret, frame = video.read()
         if frameCount % 1 == 0:
@@ -37,6 +43,7 @@ def detectOnVideo(videoName):
             personDector.execute(frame.copy())
             result = personDector.getLastResult()
             logService.log(result)
+            logging.info(result)
             #personDector.draw()
 
             if cv2.waitKey(100) == ord('q'):
@@ -49,15 +56,30 @@ def detectOnVideo(videoName):
 
 def detectOnImage(imagePath):
     image = loadImage(imagePath)
+    personDector = p.PersonDetector()
     personDector.execute(image)
     personDector.draw()
     cv2.waitKey(0)
 
-def main():
+
+def detectOnVideoInfinite():
     while True:
         result = detectOnVideo("../videos/test.mp4")
         if result == "stop":
-            break;
+            break; 
+
+def detectOnVideoWithThreads(numberOfThreads = 1):
+    threads = []
+    for i in range(0, numberOfThreads):
+        threads.append(threading.Thread(target=detectOnVideoInfinite))
+    for thread in threads:
+        thread.start()
+        time.sleep(4)
+    for thread in threads:
+        thread.join()
+
+def main():
+    detectOnVideoWithThreads(1)
     #detectOnImage("../images/test.png")
     cv2.destroyAllWindows()
 
