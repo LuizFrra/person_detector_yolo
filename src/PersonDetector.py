@@ -14,7 +14,7 @@ class PersonDetector:
         self.__lastInformation = {}
 
     def __getConfigPath(self):
-        return "../config/yolo";
+        return "/config/yolo";
 
     def __getYoloConfigPath(self):
         return os.path.sep.join([".", self.__getConfigPath(), "yolov3.cfg"])
