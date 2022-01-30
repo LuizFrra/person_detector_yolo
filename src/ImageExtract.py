@@ -5,12 +5,13 @@ from Object import Object
 from scipy.spatial import distance as dist
 
 class ImageExtract:
-    def __init__(self, image, yoloOutput):
+    def __init__(self, image, yoloOutput, pixelUnitMeter):
         self.__image = image
         self.__yoloOutput = yoloOutput
         self.__confidenceInput = 0.5
         self.__threshold = 0.6
-        self.__max_pixel_distance = 150
+        self.__safe_meter_distance_grather = 2
+        self.__pixel_unit_meter = pixelUnitMeter #0.066
 
     
     def execute(self):
@@ -37,8 +38,9 @@ class ImageExtract:
         numberOfObjetsWithOthersObjectNears = 0
 
         for personIndex in range(len(distances)):
-            numberOfObjectNear = len([x for x in distances[personIndex] if x < self.__max_pixel_distance])
-            if numberOfObjectNear > 1:
+            #numberOfObjectNear = len([x for x in distances[personIndex] if self.__unsafe_pixel_distance > x])
+            numberOfObjectNear = len([x for x in distances[personIndex] if ((x * self.__pixel_unit_meter) > self.__safe_meter_distance_grather)])
+            if numberOfObjectNear >= 1:
                 numberOfObjetsWithOthersObjectNears = numberOfObjetsWithOthersObjectNears + 1
                 objects[personIndex].setIsNear()
 

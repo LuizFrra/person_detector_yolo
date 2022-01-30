@@ -3,6 +3,7 @@ import cv2
 from LogService import LogService
 import PersonDetector as p
 
+pixelMeter = 0
 personDector = p.PersonDetector()
 
 def getImagePath(imageName):
@@ -23,18 +24,18 @@ def loadVideo(videoName):
 def captureFrame(frame):
     cv2.imwrite('../images/test.png', frame) # want to save frame here
 
-def detectOnVideo(videoName):
+def detectOnVideo(videoName, pixelMeter):
     logService = LogService('http://168.119.178.10/api/v1/device/1/log')
     video  = loadVideo(videoName)
     frameCount = 1
     while video.isOpened():
         ret, frame = video.read()
-        if frameCount % 40 == 0:
+        if frameCount % 20 == 0:
             if not ret and frameCount == 1:
                 raise Exception("Não foi possível obter o frame")
             if not ret:
                 break
-            personDector.execute(frame.copy())
+            personDector.execute(frame.copy(), pixelMeter)
             result = personDector.getLastResult()
             logService.log(result)
             personDector.draw()
@@ -55,7 +56,12 @@ def detectOnImage(imagePath):
 
 def main():
     while True:
-        result = detectOnVideo("../videos/test.mp4")
+        video = "../videos/test1.mp4"
+        if("example_01" in video):
+            pixelMeter = 0.066
+        if("test1.mp4" in video):
+            pixelMeter = 0.005
+        result = detectOnVideo(video, pixelMeter)
         if result == "stop":
             break;
     #detectOnImage("../images/test.png")

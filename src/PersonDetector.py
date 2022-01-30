@@ -39,12 +39,12 @@ class PersonDetector:
         self.__net.setInput(imageBlob)
         return self.__net.forward(self.__getFinalOutputLayers())
 
-    def execute(self, image):
+    def execute(self, image, pixelMeter):
         self.__image = image
         start = time.time()
         self.__layerOutputs = self.__forwardImageThroughYolo(self.__image)
         end = time.time()
-        imageExtractor = extractor.ImageExtract(self.__image, self.__layerOutputs)
+        imageExtractor = extractor.ImageExtract(self.__image, self.__layerOutputs, pixelMeter)
         self.__lastInformation = imageExtractor.execute()
         if(self.__debugEnable):
             print("[INFO] YOLO took {:.6f} seconds".format(end - start))
