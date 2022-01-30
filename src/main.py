@@ -29,7 +29,7 @@ def detectOnVideo(videoName):
     frameCount = 1
     while video.isOpened():
         ret, frame = video.read()
-        if frameCount % 1 == 0:
+        if frameCount % 40 == 0:
             if not ret and frameCount == 1:
                 raise Exception("Não foi possível obter o frame")
             if not ret:
@@ -37,7 +37,7 @@ def detectOnVideo(videoName):
             personDector.execute(frame.copy())
             result = personDector.getLastResult()
             logService.log(result)
-            #personDector.draw()
+            personDector.draw()
 
             if cv2.waitKey(100) == ord('q'):
                 captureFrame(frame)
