@@ -1,19 +1,9 @@
-import os
-import cv2
 from LogService import LogService
-import PersonDetector as p
+from ultralytics import YOLO
+import numpy as np
+import cv2
 
-pixelMeter = 0
-personDector = p.PersonDetector()
-
-def getImagePath(imageName):
-    return os.path.sep.join([".", "../images", imageName])
-
-def loadImage(imageName):
-    image = cv2.imread(getImagePath(imageName))
-    if image is None or image.size == 0:
-        raise Exception("Não foi possível carregar a imagem")
-    return image
+model = YOLO("yolov8n.pt")
 
 def loadVideo(videoName):
     video = cv2.VideoCapture(videoName)
@@ -21,51 +11,65 @@ def loadVideo(videoName):
         raise Exception("Não foi possível carregar o video")
     return video
 
-def captureFrame(frame):
-    cv2.imwrite('../images/test.png', frame) # want to save frame here
+def draw_boxes(frame, boxes):
+    quantity_of_box_nearby = 0
+    for i in range(len(boxes)):
+        box = boxes[i]
+        cv2.rectangle(frame, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 2)
 
-def detectOnVideo(videoName, pixelMeter):
-    logService = LogService('http://168.119.178.10/api/v1/device/1/log')
-    video  = loadVideo(videoName)
+        for j in range(i + 1, len(boxes)):
+            box1 = boxes[i]
+            box2 = boxes[j]
+            distance = np.sqrt((box1[0] - box2[0])**2 + (box1[1] - box2[1])**2)
+            if distance < 200:
+                quantity_of_box_nearby += 1
+                cv2.line(frame, (int(box1[0]), int(box1[1])), (int(box2[0]), int(box2[1])), (0, 255, 0), 2)
+    return quantity_of_box_nearby
+
+def detect_people(frame):
+    result = model(frame)[0]
+    person_boxes = []
+
+    for i in range(len(result)):
+        cls = result[i].boxes.cls
+        if cls == 0:
+            person_boxes.append(result[i].boxes.xyxy[0].tolist())
+
+    return person_boxes
+
+def getFramesFromVideoByFrameRate(video, frameRate=60):
+    frames = []
     frameCount = 1
+    logService = LogService('http://localhost:8080/api/v1/device/1/log')
     while video.isOpened():
         ret, frame = video.read()
-        if frameCount % 20 == 0:
+        if frameCount % frameRate == 0:
             if not ret and frameCount == 1:
                 raise Exception("Não foi possível obter o frame")
             if not ret:
                 break
-            personDector.execute(frame.copy(), pixelMeter)
-            result = personDector.getLastResult()
-            logService.log(result)
-            personDector.draw()
+            frames.append(frame)
 
-            if cv2.waitKey(100) == ord('q'):
-                captureFrame(frame)
-                return "stop";
+            # detect person in the frame and draw
+            boxes = detect_people(frame)
+            near_objects = draw_boxes(frame, boxes)
+            imS = cv2.resize(frame, (600, 900))
+            cv2.imshow('frame', imS)
+            cv2.waitKey(100)
+
+            result =  {
+                'number_of_objets': len(boxes),
+                'number_of_near_objects': near_objects
+            }
+            logService.log(result)
 
         frameCount+=1
+    return frames
 
-    video.release()
+videoPath = 'D:\\Pastas Windows\\Desktop\\tcc\\person_detector_yolo\\videos\\test.mp4'
+video = loadVideo(videoPath)
 
-def detectOnImage(imagePath):
-    image = loadImage(imagePath)
-    personDector.execute(image)
-    personDector.draw()
-    cv2.waitKey(0)
+frames = getFramesFromVideoByFrameRate(video, 15)
 
-def main():
-    while True:
-        video = "../videos/test1.mp4"
-        if("example_01" in video):
-            pixelMeter = 0.066
-        if("test1.mp4" in video):
-            pixelMeter = 0.005
-        result = detectOnVideo(video, pixelMeter)
-        if result == "stop":
-            break;
-    #detectOnImage("../images/test.png")
-    cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    main()
+video.release()
+cv2.destroyAllWindows()
