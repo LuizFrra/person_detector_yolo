@@ -20,10 +20,14 @@ def draw_boxes(frame, boxes):
         for j in range(i + 1, len(boxes)):
             box1 = boxes[i]
             box2 = boxes[j]
-            distance = np.sqrt((box1[0] - box2[0])**2 + (box1[1] - box2[1])**2)
+            # to calculate the distance from the objects, use the center of the box
+            center_box1 = [(box1[0] + box1[2]) / 2, (box1[1] + box1[3]) / 2]
+            center_box2 = [(box2[0] + box2[2]) / 2, (box2[1] + box2[3]) / 2]
+            
+            distance = np.sqrt((center_box1[0] - center_box2[0])**2 + (center_box1[1] - center_box2[1])**2)
             if distance < 200:
                 quantity_of_box_nearby += 1
-                cv2.line(frame, (int(box1[0]), int(box1[1])), (int(box2[0]), int(box2[1])), (0, 255, 0), 2)
+                cv2.line(frame, (int(center_box1[0]), int(center_box1[1])), (int(center_box2[0]), int(center_box2[1])), (0, 255, 0), 2)
     return quantity_of_box_nearby
 
 def detect_people(frame):
