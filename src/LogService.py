@@ -8,5 +8,5 @@ class LogService:
 
     def log(self, payload):
         payloadToSend = json.dumps(payload)
-        print(payloadToSend)
-        requests.post(self.host, data=payloadToSend, headers=self.headers)
+        #print(payloadToSend)
+        #requests.post(self.host, data=payloadToSend, headers=self.headers)
