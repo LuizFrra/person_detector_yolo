@@ -5,7 +5,7 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 
-pixel_allowed_min_distance = 200
+pixel_allowed_min_distance = 1000
 
 def timeit(method):
     def timed(*args, **kw):
@@ -36,7 +36,7 @@ def calculate_distance(frame, boxes):
                 cv2.line(frame, (int(center_box1[0]), int(center_box1[1])), (int(center_box2[0]), int(center_box2[1])), (0, 255, 0), 2)
     return quantity_of_box_nearby
 
-model = YOLO("yolov8n.pt")
+model = YOLO("best.pt")
 
 def detect_people(frame):
     result = model(frame)[0]
@@ -67,9 +67,9 @@ def getFramesFromVideoByFrameRate(video, frameRate=60):
 
             logService.log(result)
 
-            time.sleep(1.5)
-            #cv2.imshow('frame', ims)
-            #cv2.waitKey(1500)
+            #time.sleep(1.5)
+            cv2.imshow('frame', ims)
+            cv2.waitKey(30)
 
 
         frameCount+=1
@@ -92,10 +92,10 @@ def loadVideo(videoName):
         raise Exception("Não foi possível carregar o video")
     return video
 
-videoPath = os.path.join('videos', 'test.mp4')
+videoPath = os.path.join('videos', 'patteo.mp4.mp4')
 video = loadVideo(videoPath)
 
-frames = getFramesFromVideoByFrameRate(video, 5)
+frames = getFramesFromVideoByFrameRate(video, 30)
 
 video.release()
 cv2.destroyAllWindows()
