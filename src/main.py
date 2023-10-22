@@ -4,16 +4,27 @@ from LogService import LogService
 from ultralytics import YOLO
 import numpy as np
 import cv2
+import logging
+
+logging.basicConfig()
+logging.getLogger().setLevel(logging.FATAL)
 
 pixel_allowed_min_distance = 1000
+
+arr_execution_time = []
+arr_fps = []
 
 def timeit(method):
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)
         te = time.time()
-        print('%2.2f sec' % (te-ts), flush=True)
-        print('%2.2f fps' % (1/(te-ts)), flush=True)
+        execution_time = te-ts
+        fps = 1/(te-ts)
+        #print('%2.2f sec' % execution_time, flush=True)
+        #print('%2.2f fps' % fps, flush=True)
+        arr_execution_time.append(execution_time)
+        arr_fps.append(fps)
         return result
     return timed
 
@@ -68,8 +79,8 @@ def getFramesFromVideoByFrameRate(video, frameRate=60):
             logService.log(result)
 
             #time.sleep(1.5)
-            cv2.imshow('frame', ims)
-            cv2.waitKey(30)
+            #cv2.imshow('frame', ims)
+            #cv2.waitKey(30)
 
 
         frameCount+=1
@@ -95,7 +106,15 @@ def loadVideo(videoName):
 videoPath = os.path.join('videos', 'patteo.mp4.mp4')
 video = loadVideo(videoPath)
 
-frames = getFramesFromVideoByFrameRate(video, 30)
+frames = getFramesFromVideoByFrameRate(video, 100)
 
 video.release()
 cv2.destroyAllWindows()
+
+print('Mean execution time: %2.2f sec' % np.mean(arr_execution_time), flush=True)
+print('Mean fps: %2.2f sec' % np.mean(arr_fps), flush=True)
+
+# calculate 95 percentile from execution
+print('95 percentile execution time: %2.2f sec' % np.percentile(arr_execution_time, 95), flush=True)
+# calculate 95 percentile from fps
+print('Mean fps: %2.2f fps' % np.mean(arr_fps), flush=True)
