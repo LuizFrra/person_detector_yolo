@@ -113,6 +113,9 @@ cv2.destroyAllWindows()
 
 print('Mean execution time: %2.2f sec' % np.mean(arr_execution_time), flush=True)
 print('Mean fps: %2.2f sec' % np.mean(arr_fps), flush=True)
-
 print('95 percentile execution time: %2.2f sec' % np.percentile(arr_execution_time, 95), flush=True)
 print('Mean fps: %2.2f fps' % np.percentile(arr_fps, 95), flush=True)
+#print cpu temp
+with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+    print('CPU temp: %2.2f °C' % (int(f.read()) / 1000), flush=True)
+print("\n\n")
