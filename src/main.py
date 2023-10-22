@@ -7,7 +7,7 @@ import cv2
 import logging
 
 logging.basicConfig()
-logging.getLogger().setLevel(logging.FATAL)
+logging.getLogger("utils.general").setLevel(logging.FATAL)
 
 pixel_allowed_min_distance = 1000
 
@@ -50,7 +50,7 @@ def calculate_distance(frame, boxes):
 model = YOLO("best.pt")
 
 def detect_people(frame):
-    result = model(frame)[0]
+    result = model(frame, verbose=False)[0]
     person_boxes = []
 
     for i in range(len(result)):
@@ -114,7 +114,5 @@ cv2.destroyAllWindows()
 print('Mean execution time: %2.2f sec' % np.mean(arr_execution_time), flush=True)
 print('Mean fps: %2.2f sec' % np.mean(arr_fps), flush=True)
 
-# calculate 95 percentile from execution
 print('95 percentile execution time: %2.2f sec' % np.percentile(arr_execution_time, 95), flush=True)
-# calculate 95 percentile from fps
 print('Mean fps: %2.2f fps' % np.mean(arr_fps), flush=True)
