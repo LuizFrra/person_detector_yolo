@@ -106,7 +106,7 @@ def loadVideo(videoName):
 videoPath = os.path.join('videos', 'patteo.mp4.mp4')
 video = loadVideo(videoPath)
 
-frames = getFramesFromVideoByFrameRate(video, 100)
+frames = getFramesFromVideoByFrameRate(video, 30)
 
 video.release()
 cv2.destroyAllWindows()
@@ -115,4 +115,4 @@ print('Mean execution time: %2.2f sec' % np.mean(arr_execution_time), flush=True
 print('Mean fps: %2.2f sec' % np.mean(arr_fps), flush=True)
 
 print('95 percentile execution time: %2.2f sec' % np.percentile(arr_execution_time, 95), flush=True)
-print('Mean fps: %2.2f fps' % np.mean(arr_fps), flush=True)
+print('Mean fps: %2.2f fps' % np.percentile(arr_fps, 95), flush=True)
